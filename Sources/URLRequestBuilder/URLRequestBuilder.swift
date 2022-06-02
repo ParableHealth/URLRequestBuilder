@@ -176,7 +176,7 @@ public struct URLRequestBuilder {
     }
     
     public func accept(_ contentTypes: ContentType...) -> URLRequestBuilder {
-        header(name: .init(rawValue: "Accept"), values: contentTypes.map(\.rawValue))
+        header(name: "Accept", values: contentTypes.map(\.rawValue))
     }
 
     // MARK: Encoding
