@@ -108,7 +108,6 @@ public struct URLRequestBuilder {
     public func jsonBody<Content: Encodable>(_ body: Content, encoder: JSONEncoder = URLRequestBuilder.jsonEncoder, setContentLength: Bool = false) throws -> URLRequestBuilder {
         let body = try encoder.encode(body)
         return self.body(body)
-            .contentType(.applicationJSON)
     }
 
     // MARK: Query
