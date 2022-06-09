@@ -78,7 +78,7 @@ public struct URLRequestBuilder {
         return copy
     }
 
-    public enum HTTPRequestMethod: String {
+    public enum Method: String {
         case get = "GET"
         case post = "POST"
         case put = "PUT"
@@ -90,7 +90,7 @@ public struct URLRequestBuilder {
         case trace = "TRACE"
     }
 
-    public func method(_ method: HTTPRequestMethod) -> URLRequestBuilder {
+    public func method(_ method: Method) -> URLRequestBuilder {
         modifyRequest { $0.httpMethod = method.rawValue }
     }
 
@@ -174,8 +174,8 @@ public struct URLRequestBuilder {
         header(name: ContentType.header, value: contentType.rawValue)
     }
     
-    public func accept(_ contentTypes: ContentType...) -> URLRequestBuilder {
-        header(name: "Accept", values: contentTypes.map(\.rawValue))
+    public func accept(_ contentType: ContentType) -> URLRequestBuilder {
+        header(name: .accept, value: contentType.rawValue)
     }
 
     // MARK: Encoding
@@ -190,28 +190,30 @@ public struct URLRequestBuilder {
         public static let acceptEncodingHeader = HeaderName(rawValue: "Accept-Encoding")
     }
 
-    public func contentEncoding(_ encoding: Encoding...) -> URLRequestBuilder {
-        header(name: Encoding.contentEncodingHeader, values: encoding.map(\.rawValue))
+    public func contentEncoding(_ encoding: Encoding) -> URLRequestBuilder {
+        header(name: Encoding.contentEncodingHeader, value: encoding.rawValue)
     }
 
-    public func acceptEncoding(_ encoding: Encoding...) -> URLRequestBuilder {
-        header(name: Encoding.acceptEncodingHeader, values: encoding.map(\.rawValue))
+    public func acceptEncoding(_ encoding: Encoding) -> URLRequestBuilder {
+        header(name: Encoding.acceptEncodingHeader, value: encoding.rawValue)
     }
 
     // MARK: Other
 
     public func contentLength(_ length: Int) -> URLRequestBuilder {
-        header(name: HeaderName(rawValue: "Content-Length"), value: String(length))
+        header(name: .contentLength, value: String(length))
     }
 
     public func header(name: HeaderName, value: String) -> URLRequestBuilder {
         modifyRequest { $0.addValue(value, forHTTPHeaderField: name.rawValue) }
     }
-    
-    public static var multipleHeadersDefaultSeparator = ", "
 
-    public func header(name: HeaderName, values: [String], separator: String = URLRequestBuilder.multipleHeadersDefaultSeparator) -> URLRequestBuilder {
-        modifyRequest { $0.addValue(values.joined(separator: separator), forHTTPHeaderField: name.rawValue) }
+    public func header(name: HeaderName, values: [String]) -> URLRequestBuilder {
+        var copy = self
+        for value in values {
+            copy = copy.header(name: name, value: value)
+        }
+        return copy
     }
 
     public func timeout(_ timeout: TimeInterval) -> URLRequestBuilder {
@@ -266,9 +268,15 @@ extension URLRequestBuilder {
     public struct HeaderName {
         public var rawValue: String
 
-        public static let userAgent = HeaderName(rawValue: "User-Agent")
-        public static let cookie = HeaderName(rawValue: "Cookie")
-        public static let authorization = HeaderName(rawValue: "Authorization")
+        public static let userAgent: HeaderName = "User-Agent"
+        public static let cookie: HeaderName = "Cookie"
+        public static let authorization: HeaderName = "Authorization"
+        public static let accept: HeaderName = "Accept"
+        public static let contentLength: HeaderName = "Content-Length"
+        
+        public static let contentType = URLRequestBuilder.ContentType.header
+        public static let contentEncoding = URLRequestBuilder.Encoding.contentEncodingHeader
+        public static let acceptEncoding = URLRequestBuilder.Encoding.acceptEncodingHeader
     }
 }
 
