@@ -3,8 +3,8 @@ import Foundation
 public typealias EndpointRequest = URLRequestBuilder
 
 public struct URLRequestBuilder {
-    private var buildURLRequest: (inout URLRequest) -> Void
-    private var urlComponents: URLComponents
+    public private(set) var buildURLRequest: (inout URLRequest) -> Void
+    public private(set) var urlComponents: URLComponents
 
     private init(urlComponents: URLComponents) {
         self.buildURLRequest = { _ in }
@@ -257,6 +257,28 @@ extension URLRequestBuilder.RequestConfiguration {
             var urlRequest = URLRequest(url: finalURL)
             request.buildURLRequest(&urlRequest)
 
+            return urlRequest
+        }
+    }
+    
+    public static func base(scheme: String?, host: String?, port: Int?) -> URLRequestBuilder.RequestConfiguration {
+        URLRequestBuilder.RequestConfiguration { request in
+            var request = request
+            request.urlComponents.scheme = scheme
+            request.urlComponents.host = host
+            request.urlComponents.port = port
+            
+            if !request.urlComponents.path.starts(with: "/") {
+                request.urlComponents.path = "/" + request.urlComponents.path
+            }
+            
+            guard let finalURL = request.urlComponents.url else {
+                preconditionFailure()
+            }
+            
+            var urlRequest = URLRequest(url: finalURL)
+            request.buildURLRequest(&urlRequest)
+            
             return urlRequest
         }
     }
