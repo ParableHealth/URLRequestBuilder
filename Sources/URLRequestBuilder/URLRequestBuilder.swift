@@ -45,18 +45,20 @@ public struct URLRequestBuilder {
 
     public static func jsonGet(path: String) -> URLRequestBuilder {
         .get(path: path)
-            .contentType(.applicationJSON)
+            .accept(.applicationJSON)
     }
 
     public static func jsonPost(path: String, jsonData: Data) -> URLRequestBuilder {
         .post(path: path)
             .contentType(.applicationJSON)
+            .accept(.applicationJSON)
             .body(jsonData)
     }
 
     public static func jsonPost<Content: Encodable>(path: String, jsonObject: Content, encoder: JSONEncoder = URLRequestBuilder.jsonEncoder) throws -> URLRequestBuilder {
         try .post(path: path)
             .contentType(.applicationJSON)
+            .accept(.applicationJSON)
             .jsonBody(jsonObject, encoder: encoder)
     }
 
