@@ -5,6 +5,35 @@ final class URLRequestBuilderTests: XCTestCase {
     let testURL = URL(string: "https://example.com")!
     let localhost = URL(string: "http://localhost:3000/")!
     
+    // MARK: - JSON Factory Tests
+
+    func testJsonGetUsesAcceptHeaderNotContentType() {
+        let request = URLRequestBuilder.jsonGet(path: "/items")
+            .makeRequest(withBaseURL: testURL)
+        XCTAssertEqual(request.value(forHTTPHeaderField: "Accept"), "application/json")
+        XCTAssertNil(request.value(forHTTPHeaderField: "Content-Type"))
+    }
+
+    func testJsonPostWithDataSetsContentTypeAndAcceptHeaders() {
+        let jsonData = Data("{\"key\":\"value\"}".utf8)
+        let request = URLRequestBuilder.jsonPost(path: "/items", jsonData: jsonData)
+            .makeRequest(withBaseURL: testURL)
+        XCTAssertEqual(request.value(forHTTPHeaderField: "Content-Type"), "application/json")
+        XCTAssertEqual(request.value(forHTTPHeaderField: "Accept"), "application/json")
+        XCTAssertEqual(request.httpBody, jsonData)
+    }
+
+    func testJsonPostWithEncodableObjectSetsContentTypeAndAcceptHeaders() throws {
+        struct Item: Encodable { let name: String }
+        let request = try URLRequestBuilder.jsonPost(path: "/items", jsonObject: Item(name: "test"))
+            .makeRequest(withBaseURL: testURL)
+        XCTAssertEqual(request.value(forHTTPHeaderField: "Content-Type"), "application/json")
+        XCTAssertEqual(request.value(forHTTPHeaderField: "Accept"), "application/json")
+        XCTAssertNotNil(request.httpBody)
+    }
+
+    // MARK: -
+
     func testMultipleHeaders() throws {
         let request = URLRequestBuilder(path: "multiple-headers")
             .header(name: "Test-Multiple", values: ["A", "B", "C"])
